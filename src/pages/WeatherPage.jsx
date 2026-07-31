@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import CityForm from "../components/CityForm";
 import ForecastList from "../components/ForecastList";
-import { getForecast } from "../api/weather";
+import { getForecast, getCurrentWeather } from "../api/weather";
 import styled from "@emotion/styled";
 import DailyForecastModal from "../components/DailyForecastModal";
+import CurrentWeatherCard from "../components/CurrentWeatherCard";
 
 const Disclaimer = styled.p`
   text-align: center;
@@ -157,14 +158,22 @@ export default function Home() {
   const [units, setUnits] = useState("imperial");
   const [currentCity, setCurrentCity] = useState("Corvallis,OR,US");
   const [selectedDay, setSelectedDay] = useState(null);
+  const [currentWeather, setCurrentWeather] = useState(null);
+
+  console.log(currentWeather);
 
   const handleSearch = async (cityInput) => {
     try {
       setLoading(true);
       setError(null);
       setCurrentCity(cityInput);
-      const data = await getForecast(cityInput, units);
-      setForecast(data);
+      const [forecastData, currentData] = await Promise.all([
+        getForecast(cityInput, units),
+        getCurrentWeather(cityInput, units)
+      ]);
+      console.log("Current Weather API:", currentData);
+      setForecast(forecastData);
+      setCurrentWeather(currentData);
     } catch (err) {
       setError("Could not fetch weather");
       console.error(err);
@@ -176,13 +185,24 @@ export default function Home() {
   const toggleUnits = async () => {
     const newUnits =
       units === "imperial" ? "metric" : "imperial";
+
     setUnits(newUnits);
+
     try {
       setLoading(true);
-      const data = await getForecast(currentCity, newUnits);
-      setForecast(data);
+
+      const [forecastData, currentData] = await Promise.all([
+        getForecast(currentCity, newUnits),
+        getCurrentWeather(currentCity, newUnits)
+      ]);
+
+      setForecast(forecastData);
+      setCurrentWeather(currentData);
+
     } catch (err) {
       setError("Could not fetch weather.");
+      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -259,6 +279,13 @@ export default function Home() {
         <CurrentCity>
           Currently Viewing: {currentCity.replace(",US", "").replace(",", ", ")}
         </CurrentCity>
+
+        {currentWeather && (
+          <CurrentWeatherCard
+            weather={currentWeather}
+            units={units}
+          />
+        )}
 
         {loading && <p>Loading...</p>}
         {error && <p>{error}</p>}
