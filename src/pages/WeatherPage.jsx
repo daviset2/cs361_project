@@ -5,6 +5,13 @@ import { getForecast } from "../api/weather";
 import styled from "@emotion/styled";
 import DailyForecastModal from "../components/DailyForecastModal";
 
+const Disclaimer = styled.p`
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin: 5px 0 20px;
+`;
+
 const AppContainer = styled.div`
   font-family: "Helvetica Neue", Arial, sans-serif;
   background: #f5f5f5;
@@ -244,6 +251,10 @@ export default function Home() {
             Use Location
           </LocationButton>
         </SearchRow>
+
+        <Disclaimer>
+          ℹ️ Location data is not shared or stored.
+        </Disclaimer>
 
         <CurrentCity>
           Currently Viewing: {currentCity.replace(",US", "").replace(",", ", ")}
